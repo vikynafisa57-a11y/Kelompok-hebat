@@ -1,0 +1,11 @@
+@extends('layouts.app')
+@section('title', 'Skill Gap')
+@section('content')
+<div class="page-heading"><div><span class="eyebrow-text">SKILL GAP ANALYSIS</span><h1>Jarak menuju tujuanmu</h1><p>Kenali skill yang dibutuhkan dan rencanakan pengembangannya.</p></div></div>
+@if(!$career)<div class="empty-state"><div class="empty-icon">◎</div><h3>Tentukan tujuan karier dulu</h3><p>Pilih target karier agar SkillGap bisa menampilkan skill yang perlu kamu kuasai.</p><a class="btn btn-primary" href="{{ route('careers.index') }}">Pilih target karier →</a></div>@else
+<div class="career-summary"><div class="summary-icon">◎</div><div><small>TARGET KARIER KAMU</small><h2>{{ $career->title }}</h2><p>{{ $career->description }}</p></div><a href="{{ route('careers.index') }}" class="btn btn-outline btn-small">Ubah target</a></div>
+@if(!$assessment)<div class="notice-card"><strong>Lengkapi assessment untuk analisis yang lebih personal</strong><p>Jawaban assessment akan membantu kamu memahami level kemampuan saat ini.</p><a class="btn btn-primary" href="{{ route('assessment.index') }}">Mulai assessment →</a></div>@else<div class="score-panel"><div><small>SKOR ASSESSMENT TERAKHIR</small><div class="big-score">{{ $assessment->score }}<span>/100</span></div></div><div class="score-message"><strong>{{ $assessment->score >= 80 ? 'Awal yang bagus!' : 'Terus tingkatkan kemampuanmu!' }}</strong><p>Gunakan daftar skill di bawah sebagai panduan belajar. Skor ini merupakan ringkasan jawaban self-assessment, bukan sertifikasi kemampuan.</p></div></div>@endif
+<div class="section-heading"><div><h2>Skill yang dibutuhkan</h2><p>Level kebutuhan karier ditetapkan pada data awal.</p></div><a class="text-link" href="{{ route('roadmap.index') }}">Buka roadmap →</a></div>
+<div class="skill-gap-list">@foreach($skills as $skill)<div class="gap-row"><div class="gap-skill-icon">✧</div><div class="gap-main"><strong>{{ $skill->name }}</strong><small>{{ $skill->category }}</small></div><div class="gap-level"><span>Target level</span><div class="level-dots">@for($i=1;$i<=5;$i++)<i class="{{ $i <= $skill->pivot->required_level ? 'filled' : '' }}"></i>@endfor</div></div><span class="gap-status">{{ $assessment ? 'Perlu ditinjau' : 'Belum dinilai' }}</span></div>@endforeach</div>
+@endif
+@endsection
