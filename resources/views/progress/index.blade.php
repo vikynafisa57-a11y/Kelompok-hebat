@@ -1,0 +1,11 @@
+@extends('layouts.app')
+@section('title', 'Progress Saya')
+@section('content')
+<div class="page-heading"><div><span class="eyebrow-text">YOUR GROWTH</span><h1>Progress belajar</h1><p>Kemajuan tidak harus cepat, yang penting terus bergerak.</p></div><a class="btn btn-primary" href="{{ route('roadmap.index') }}">Lanjut belajar →</a></div>
+@if(!$career)<div class="empty-state"><h3>Belum ada progres</h3><p>Pilih target karier dan mulai roadmap belajarmu.</p><a class="btn btn-primary" href="{{ route('careers.index') }}">Pilih target karier →</a></div>@else
+<div class="progress-hero"><div><small>TARGET KARIER</small><h2>{{ $career->title }}</h2><p>Terus tingkatkan kemampuanmu melalui tahapan belajar.</p></div><div class="progress-circle" style="--progress: {{ $percent }}%"><div><strong>{{ $percent }}%</strong><small>SELESAI</small></div></div></div>
+<div class="stats-grid"><div class="stat-card"><div class="stat-top"><span class="stat-icon green">✓</span><span class="stat-caption">MATERI SELESAI</span></div><strong class="stat-number">{{ $completed }}</strong><p>Materi sudah kamu tandai selesai</p></div><div class="stat-card"><div class="stat-top"><span class="stat-icon blue">↗</span><span class="stat-caption">TOTAL MATERI</span></div><strong class="stat-number">{{ $total }}</strong><p>Materi di roadmap saat ini</p></div><div class="stat-card"><div class="stat-top"><span class="stat-icon purple">◎</span><span class="stat-caption">MASIH BERJALAN</span></div><strong class="stat-number">{{ max(0, $total - $completed) }}</strong><p>Materi untuk langkah selanjutnya</p></div></div>
+<div class="section-heading"><div><h2>Daftar materi</h2><p>Centang materi setelah selesai dipelajari.</p></div></div>
+<div class="progress-list">@foreach($resources as $resource)@php($isDone = (bool) optional($resource->userProgress->first())->completed)<div class="progress-list-item"><span class="progress-check {{ $isDone ? 'checked' : '' }}">{{ $isDone ? '✓' : '○' }}</span><div><strong>{{ $resource->title }}</strong><small>{{ $resource->level }}</small></div><span class="status-pill {{ $isDone ? 'status-done' : '' }}">{{ $isDone ? 'Selesai' : 'Belum selesai' }}</span></div>@endforeach</div>
+@endif
+@endsection
