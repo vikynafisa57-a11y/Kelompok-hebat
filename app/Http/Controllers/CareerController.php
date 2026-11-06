@@ -28,7 +28,9 @@ class CareerController extends Controller
     public function skillGap(Request $request)
     {
         $career = $request->user()->careerTarget;
-        $assessment = $request->user()->assessments()->latest()->first();
+        $assessment = $request->user()->assessments()
+            ->where('career_target_id', $request->user()->career_target_id)
+            ->latest()->first();
 
         $skills = $career ? $career->skills : collect();
 

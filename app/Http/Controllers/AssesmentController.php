@@ -20,15 +20,27 @@ class AssessmentController extends Controller
 
     public function submit(Request $request)
     {
-        $questions = AssessmentQuestion::all();
+        $questions = AssessmentQuestion::orderBy('id')->get();
+
         if ($questions->isEmpty()) {
-            return back()->with('error', 'Belum ada pertanyaan assessment. Jalankan seeder SkillGap terlebih dahulu.');
+            return back()->with('error', 'Belum ada pertanyaan assessment. Jalankan php artisan db:seed terlebih dahulu.');
+        }
+
+        if (! $request->user()->career_target_id) {
+            return redirect()->route('careers.index')
+                ->with('error', 'Pilih target karier terlebih dahulu.');
         }
 
         $validated = $request->validate([
-            'answers' => ['required', 'array'],
-            'answers.*' => ['required', 'integer', 'min:1', 'max:5'],
+            'answers' => ['required', 'array', 'size:'.$questions->count()],
+            'answers.*' => ['required', 'integer', 'between:1,5'],
         ]);
+
+        foreach ($questions as $question) {
+            if (! array_key_exists($question->id, $validated['answers'])) {
+                return back()->withErrors(['answers' => 'Jawab semua pertanyaan terlebih dahulu.'])->withInput();
+            }
+        }
 
         $score = (int) round(collect($validated['answers'])->avg() * 20);
 
@@ -40,16 +52,15 @@ class AssessmentController extends Controller
             ]);
 
             foreach ($questions as $question) {
-                if (isset($validated['answers'][$question->id])) {
-                    AssessmentAnswer::create([
-                        'assessment_id' => $assessment->id,
-                        'assessment_question_id' => $question->id,
-                        'score' => (int) $validated['answers'][$question->id],
-                    ]);
-                }
+                AssessmentAnswer::create([
+                    'assessment_id' => $assessment->id,
+                    'assessment_question_id' => $question->id,
+                    'score' => (int) $validated['answers'][$question->id],
+                ]);
             }
         });
 
-        return redirect()->route('skill-gap')->with('success', "Assessment tersimpan. Skor umum kamu: {$score}/100.");
+        return redirect()->route('skill-gap')
+            ->with('success', "Assessment tersimpan. Skor umum kamu: {$score}/100.");
     }
 }

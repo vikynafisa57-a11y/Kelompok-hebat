@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
@@ -18,7 +19,7 @@ class AuthController extends Controller
     {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:100'],
-            'email' => ['required', 'striing', 'email', 'max:255', 'unique:users,email'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
         ]);
 
@@ -29,39 +30,42 @@ class AuthController extends Controller
         ]);
 
         Auth::login($user);
-        $request->session()->regnerate();
+        $request->session()->regenerate();
 
-        return redirect()->route('dashboard')->with('succes', 'Akun berhasil dibuat. Selamat Datang di SkillGap!');
-        }
+        return redirect()->route('dashboard')
+            ->with('success', 'Akun berhasil dibuat. Selamat datang di SkillGap!');
+    }
 
-        public function showLogin()
-        {
-            return view('auth.login');
-        }
+    public function showLogin()
+    {
+        return view('auth.login');
+    }
 
-        public function login(Request $request)
-        {
-            $credentials = $request->validate([
-                'email' => ['required', 'email'],
-                'password' => ['required', 'string'],
+    public function login(Request $request)
+    {
+        $credentials = $request->validate([
+            'email' => ['required', 'email'],
+            'password' => ['required', 'string'],
+        ]);
+
+        if (! Auth::attempt($credentials, $request->boolean('remember'))) {
+            throw ValidationException::withMessages([
+                'email' => 'Email atau kata sandi tidak cocok.',
             ]);
-
-            if (! Auth::attempt($credential, $request->boolean('remember'))) {
-                return back()->withErrors(['email' => 'Email atau kata sandi tidak cocok. '])
-                ->onlyInput('email');
-            }
-
-            $request->session()->regenerate();
-
-            return redirect()->intended(route('dashboard'))->with('succes', 'Berhasil Masuk. ');
         }
 
-        public function logout(Request $request)
-        {
-            Auth::logout();
-            $request->session()->invalidate();
-            $request->session()->regenerateToken();
+        $request->session()->regenerate();
 
-            return redirect()->route('login')->with('success', 'Kamu Berhasil Masuk. ');
-        }
+        return redirect()->intended(route('dashboard'))
+            ->with('success', 'Berhasil masuk ke SkillGap.');
+    }
+
+    public function logout(Request $request)
+    {
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()->route('login')->with('success', 'Kamu berhasil keluar.');
+    }
 }

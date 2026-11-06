@@ -35,6 +35,11 @@ class User extends Authenticatable
         return $this->hasMany(Assessment::class);
     }
 
+    public function learningProgress(): HasMany
+    {
+        return $this->hasMany(UserLearningProgress::class);
+    }
+
     /**
      * Get the attributes that should be cast.
      *
